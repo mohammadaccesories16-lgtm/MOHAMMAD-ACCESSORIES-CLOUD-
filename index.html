@@ -1,152 +1,493 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOHAMMAD ACCESSORIES | Security Terminal</title>
+    <title>MOHAMMAD ACCESSORIES (CLOUD)</title>
     <style>
-        :root { --gold: #d4a373; --bg: #0a0a0a; --coffee: #3a2e22; }
-        body { background: var(--bg); color: var(--gold); font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        header { background: #2c3e50; color: white; text-align: center; padding: 20px; font-size: 26px; font-weight: bold; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); position: relative; }
         
-        /* Scanner Effect Background */
-        body::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-            background: rgba(212, 163, 115, 0.2); box-shadow: 0 0 10px var(--gold);
-            animation: scan 4s linear infinite; z-index: 1;
+        /* Loading Spinner */
+        #loader { display: none; position: absolute; right: 20px; top: 25px; width: 25px; height: 25px; border: 3px solid #fff; border-radius: 50%; border-top-color: #1abc9c; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        nav { display: flex; justify-content: center; background: #34495e; padding: 12px; gap: 10px; flex-wrap: wrap; }
+        nav button { background: #1abc9c; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+        nav button:hover { background: #16a085; transform: translateY(-1px); }
+        nav button.active { background: #e74c3c; }
+
+        .container { flex: 1; padding: 25px; max-width: 1300px; margin: 0 auto; width: 100%; }
+        .section { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        
+        .print-section-btn { background: #34495e; color: white; border: none; padding: 8px 15px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; float: right; margin-top: -5px; transition: 0.2s; }
+        .print-section-btn:hover { background: #000; }
+        
+        h2 { margin-bottom: 20px; color: #2c3e50; border-bottom: 3px solid #1abc9c; padding-bottom: 8px; }
+        h3 { margin-top: 25px; color: #34495e; margin-bottom: 12px; }
+        h4 { margin-top: 15px; margin-bottom: 8px; color: #2c3e50; font-size: 16px; border-left: 4px solid #1abc9c; padding-left: 8px; }
+
+        .invoice-box { background: #fdfefe; border: 1px solid #d6dbdf; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+        .meta-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .form-group { flex: 1; min-width: 180px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #2c3e50; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        
+        .item-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; background: #f8f9f9; padding: 10px; border-radius: 4px; }
+        .item-row input { flex: 2; }
+        .item-row input[type="number"] { flex: 1; }
+        
+        .btn-add-row { background: #3498db; color: white; border: none; padding: 8px 15px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+        .btn-add-row:hover { background: #2980b9; }
+        .btn-remove-row { background: #e74c3c; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn-submit { background: #27ae60; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 4px; display: block; width: 100%; margin-top: 15px; }
+        .btn-submit:hover { background: #219653; }
+
+        .table-container { margin-top: 15px; overflow-x: auto; margin-bottom: 25px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; min-width: 700px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 14px; }
+        th { background-color: #f2f2f2; color: #2c3e50; font-weight: bold; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        tr:hover { background-color: #f1f1f1; }
+        .delete-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-size: 12px; }
+        .delete-btn:hover { background: #c0392b; }
+
+        .filter-container { background: #e8f4f8; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 5px solid #2980b9; display: flex; flex-wrap: wrap; align-items: center; gap: 15px; }
+        .total-badge { background: #2c3e50; color: white; padding: 8px 15px; border-radius: 4px; font-weight: bold; font-size: 14px; }
+        .total-badge.income { background: #27ae60; }
+        .total-badge.expense { background: #c0392b; }
+        .total-badge.blue { background: #2980b9; }
+        .filter-totals { display: flex; gap: 10px; margin-left: auto; flex-wrap: wrap; }
+        
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid #1abc9c; }
+        .card.sales { border-left-color: #27ae60; }
+        .card.income { border-left-color: #2ecc71; }
+        .card.expense { border-left-color: #e74c3c; }
+        .card.purple { border-left-color: #9b59b6; }
+        .card.orange { border-left-color: #e67e22; }
+        .card h3 { font-size: 14px; color: #7f8c8d; margin-bottom: 8px; text-transform: uppercase; }
+        .card p { font-size: 24px; font-weight: bold; color: #2c3e50; }
+
+        .print-box { border: 2px dashed #bdc3c7; padding: 30px; background: #fff; max-width: 800px; margin: 20px auto; border-radius: 5px; }
+        .print-header { text-align: center; margin-bottom: 25px; }
+        .invoice-details { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .print-btn { background: #34495e; color: white; border: none; padding: 12px; font-weight: bold; cursor: pointer; border-radius: 4px; width: 100%; margin-top: 15px; }
+        
+        @media print {
+            body { background: white; color: black; }
+            header, nav, form, .btn-add-row, .print-section-btn, .delete-btn, .filter-container, .print-btn { display: none !important; }
+            .section { display: none !important; padding: 0 !important; box-shadow: none !important; }
+            .section.print-target { display: block !important; }
+            .table-container { overflow-x: visible !important; }
+            table { min-width: 100% !important; }
+            th { background-color: #eaeaea !important; }
         }
-        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-
-        .card { 
-            position: relative; z-index: 10; border: 1px solid var(--gold); 
-            padding: 40px; text-align: center; background: rgba(10, 10, 10, 0.95); 
-            width: 350px; box-shadow: 0 0 50px #000; border-radius: 5px;
-        }
-
-        .brand { font-size: 24px; font-weight: bold; letter-spacing: 2px; margin-bottom: 5px; text-shadow: 0 0 10px var(--gold); }
-        .tagline { font-size: 9px; color: #555; margin-bottom: 30px; letter-spacing: 2px; }
-
-        input { 
-            width: 90%; background: transparent; border: none; border-bottom: 1px solid #222; 
-            color: #fff; padding: 12px; margin: 15px 0; outline: none; font-size: 16px; 
-            text-align: center; transition: 0.3s;
-        }
-        input:focus { border-bottom: 1px solid var(--gold); background: rgba(212, 163, 115, 0.05); }
-
-        button { 
-            width: 100%; background: var(--gold); color: #000; border: none; 
-            padding: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; 
-            text-transform: uppercase; letter-spacing: 3px; transition: 0.4s;
-        }
-        button:hover { background: #fff; box-shadow: 0 0 20px #fff; }
-
-        #status { font-size: 11px; margin-top: 20px; color: #666; min-height: 15px; text-transform: uppercase; }
-
-        /* Brewing Animation Overlay */
-        #loader { 
-            position: fixed; inset: 0; background: #000; display: none; 
-            flex-direction: column; justify-content: center; align-items: center; z-index: 1000; 
-        }
-        .cup { width: 60px; height: 45px; border: 2px solid var(--gold); border-radius: 0 0 20px 20px; position: relative; overflow: hidden; }
-        .liquid { position: absolute; bottom: 0; width: 100%; height: 0; background: var(--coffee); animation: fill 3s forwards; }
-        @keyframes fill { to { height: 90%; } }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="brand">MOHAMMAD ACCESSORIES</div>
-    <div class="tagline">ENCRYPTED SECURE TERMINAL</div>
-    
-    <div id="loginForm">
-        <input type="text" id="username" placeholder="OPERATOR ID">
-        <button onclick="sendStrictOTP()">SEND ACCESS CODE</button>
+    <header>
+        MOHAMMAD ACCESSORIES (CLOUD)
+        <div id="loader"></div>
+    </header>
+
+    <nav>
+        <button onclick="showSection('transactions')" id="btn-transactions" class="active">১. লেনদেন এন্ট্রি</button>
+        <button onclick="showSection('billing')" id="btn-billing">২. বিল ও চালান</button>
+        <button onclick="showSection('management')" id="btn-management">৩. ড্যাশবোর্ড</button>
+        <button onclick="showSection('partners')" id="btn-partners">৪. বায়ার ও সেলার ম্যানেজার</button>
+        <button onclick="showSection('ledger')" id="btn-ledger" style="background: #d35400;">৫. লেজার বুক</button>
+    </nav>
+
+    <div class="container">
+        <!-- সেকশন ১: লেনদেন এন্ট্রি -->
+        <div id="transactions" class="section" style="display: block;">
+            <h2>মালের লেনদেন</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div class="invoice-box" style="flex: 1; min-width: 320px;">
+                    <h3 style="margin-top:0; color:#2980b9;">ক্রয় (Purchase Entry)</h3>
+                    <form id="purchase-form" onsubmit="savePurchase(event)">
+                        <div class="meta-group">
+                            <div class="form-group"><label>তারিখ</label><input type="date" id="p-date" required></div>
+                            <div class="form-group"><label>সাপ্লায়ার / বিক্রেতা</label><select id="p-supplier" required></select></div>
+                        </div>
+                        <div id="p-items"></div>
+                        <button type="button" class="btn-add-row" onclick="addItemRow('p-items', 'p')">+ আইটেম যোগ করুন</button>
+                        <button type="submit" class="btn-submit" style="background:#2980b9;">ক্রয় ভাউচার সেভ করুন</button>
+                    </form>
+                </div>
+
+                <div class="invoice-box" style="flex: 1; min-width: 320px;">
+                    <h3 style="margin-top:0; color:#27ae60;">বিক্রয় (Sales Entry)</h3>
+                    <form id="sales-form" onsubmit="saveSales(event)">
+                        <div class="meta-group">
+                            <div class="form-group"><label>তারিখ</label><input type="date" id="s-date" required></div>
+                            <div class="form-group"><label>বায়ার / কাস্টমার</label><select id="s-customer" required></select></div>
+                        </div>
+                        <div id="s-items"></div>
+                        <button type="button" class="btn-add-row" onclick="addItemRow('s-items', 's')">+ আইটেম যোগ করুন</button>
+                        <button type="submit" class="btn-submit" style="background:#27ae60;">বিক্রয় মেমো সেভ করুন</button>
+                    </form>
+                </div>
+            </div>
+
+            <h2 style="margin-top:30px;">💰 টাকা লেনদেন (জমা ও খরচ)</h2>
+            <div class="invoice-box">
+                <form id="cash-form" onsubmit="saveCash(event)">
+                    <div class="meta-group">
+                        <div class="form-group"><label>তারিখ</label><input type="date" id="c-date" required></div>
+                        <div class="form-group">
+                            <label>লেনদেনের ধরন</label>
+                            <select id="c-type" required>
+                                <option value="In">টাকা পেয়েছি (Cash Received / জমা)</option>
+                                <option value="Out">টাকা দিয়েছি (Cash Paid / খরচ)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>কোম্পানি / পার্টনার</label><select id="c-company" required></select></div>
+                        <div class="form-group"><label>টাকার পরিমাণ</label><input type="number" id="c-amount" step="any" required></div>
+                        <div class="form-group"><label>বিবরণ (নোট)</label><input type="text" id="c-desc" placeholder="যেমন: বিল ক্লিয়ারেন্স"></div>
+                    </div>
+                    <button type="submit" class="btn-submit" style="background:#e67e22;">ক্যাশ লেনদেন সেভ করুন</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- সেকশন ২: বিলিং জেনারেটর -->
+        <div id="billing" class="section" style="display: none;">
+            <div style="text-align: center; margin-bottom: 20px; display:flex; justify-content:center; gap:15px;">
+                <button onclick="generateDoc('bill')" style="background:#27ae60; color:white; padding:12px 25px; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">বিল তৈরি করুন</button>
+                <button onclick="generateDoc('challan')" style="background:#2980b9; color:white; padding:12px 25px; border:none; font-weight:bold; cursor:pointer; border-radius:4px;">চালান তৈরি করুন</button>
+            </div>
+            <div class="print-box" id="doc-print-area">
+                <div class="print-header"><h1 id="doc-title">MOHAMMAD ACCESSORIES</h1><p id="doc-subtitle">পাইকারি ও খুচরা বিক্রেতা</p></div>
+                <div class="invoice-details">
+                    <div><p><strong>কোম্পানি/কাস্টমার:</strong> <span id="doc-cust">N/A</span></p><p><strong>ঠিকানা:</strong> <span id="doc-addr">N/A</span></p></div>
+                    <div style="text-align: right;"><p><strong>আইডি:</strong> <span id="doc-id">N/A</span></p><p><strong>তারিখ:</strong> <span id="doc-date">N/A</span></p></div>
+                </div>
+                <table id="doc-table"></table>
+                <h3 id="doc-total-text" style="text-align: right; margin-top: 15px;"></h3>
+                <button class="print-btn" onclick="window.print()">প্রিন্ট / PDF সেভ করুন</button>
+            </div>
+        </div>
+
+        <!-- সেকশন ৩: ড্যাশবোর্ড খতিয়ান -->
+        <div id="management" class="section" style="display: none;">
+            <h2>📊 লাইভ ওভারভিউ ড্যাশবোর্ড</h2>
+            <div class="dashboard-grid">
+                <div class="card" style="border-left-color: #2980b9;"><h3>মোট মাল ক্রয়</h3><p id="dash-p">0.00 ৳</p></div>
+                <div class="card sales"><h3>মোট মাল বিক্রয়</h3><p id="dash-s">0.00 ৳</p></div>
+                <div class="card income"><h3>মোট নগদ জমা</h3><p id="dash-in">0.00 ৳</p></div>
+                <div class="card expense"><h3>মোট নগদ খরচ</h3><p id="dash-out">0.00 ৳</p></div>
+            </div>
+
+            <h3>📝 কাঁচা খতিয়ান টেবিল ভিউ (Realtime Cloud Sync)</h3>
+            <div class="table-container">
+                <h4>১. ক্রয় রেকর্ড সমূহ</h4>
+                <table id="raw-p-table"><thead><tr><th>তারিখ</th><th>আইডি</th><th>কোম্পানি</th><th>আইটেম</th><th>পরিমাণ</th><th>দর</th><th>মোট</th><th>অ্যাকশন</th></tr></thead><tbody></tbody></table>
+            </div>
+            <div class="table-container">
+                <h4>২. বিক্রয় রেকর্ড সমূহ</h4>
+                <table id="raw-s-table"><thead><tr><th>তারিখ</th><th>আইডি</th><th>কোম্পানি</th><th>আইটেম</th><th>পরিমাণ</th><th>দর</th><th>মোট</th><th>অ্যাকশন</th></tr></thead><tbody></tbody></table>
+            </div>
+            <div class="table-container">
+                <h4>৩. কাকে টাকা দিলাম রেকর্ড সমূহ (Paid)</h4>
+                <table id="raw-paid-table"><thead><tr><th>তারিখ</th><th>আইডি</th><th>কোম্পানি</th><th>বিবরণ</th><th>পরিমাণ</th><th>অ্যাকশন</th></tr></thead><tbody></tbody></table>
+            </div>
+            <div class="table-container">
+                <h4>৪. কার থেকে টাকা নিলাম রেকর্ড সমূহ (Received)</h4>
+                <table id="raw-received-table"><thead><tr><th>তারিখ</th><th>আইডি</th><th>কোম্পানি</th><th>বিবরণ</th><th>পরিমাণ</th><th>অ্যাকশন</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+
+        <!-- সেকশন ৪: পার্টনার ম্যানেজার -->
+        <div id="partners" class="section" style="display: none;">
+            <h2>🏭 সেলার ম্যানেজার</h2>
+            <form id="sup-form" onsubmit="addPartner(event, 'suppliers')">
+                <div class="meta-group">
+                    <div class="form-group"><label>কোম্পানির নাম</label><input type="text" id="sup-name" required></div>
+                    <div class="form-group"><label>ঠিকানা ও মোবাইল</label><input type="text" id="sup-contact" required></div>
+                </div>
+                <button type="submit" class="btn-submit" style="width:auto; background:#1abc9c;">যোগ করুন</button>
+            </form>
+            <div class="table-container"><table id="sup-table"><thead><tr><th>নাম</th><th>যোগাযোগ</th><th>অ্যাকশন</th></tr></thead><tbody></tbody></table></div>
+
+            <h2 style="margin-top:30px;">👥 বায়ার ম্যানেজার</h2>
+            <form id="cust-form" onsubmit="addPartner(event, 'customers')">
+                <div class="meta-group">
+                    <div class="form-group"><label>বায়ার নাম</label><input type="text" id="cust-name" required></div>
+                    <div class="form-group"><label>ঠিকানা</label><input type="text" id="cust-address" required></div>
+                </div>
+                <button type="submit" class="btn-submit" style="width:auto; background:#3498db;">যোগ করুন</button>
+            </form>
+            <div class="table-container"><table id="cust-table"><thead><tr><th>নাম</th><th>ঠিকানা</th><th>অ্যাকশন</th></tr></thead><tbody></tbody></table></div>
+        </div>
+
+        <!-- সেকশন ৫: লেজার বুক -->
+        <div id="ledger" class="section" style="display: none;">
+            <h2>📊 লেজার স্টেটমেন্ট</h2>
+            <div class="filter-container"><label>🔍 কোম্পানি ফিল্টার:</label><select id="ledger-filter-select" onchange="renderLedger()"></select></div>
+            <div id="ledger-content" style="display:none;">
+                <div class="filter-totals" style="justify-content: flex-start; gap:15px; margin-bottom: 20px;">
+                    <div class="total-badge blue" id="ledger-badge-total-goods"></div>
+                    <div class="total-badge income" id="ledger-badge-total-cash"></div>
+                    <div class="total-badge expense" id="ledger-badge-balance"></div>
+                </div>
+                <h3>📦 মালের খতিয়ান</h3>
+                <div class="table-container"><table id="ledger-goods-table"><thead><tr><th>তারিখ</th><th>আইডি</th><th>বিবরণ</th><th>পরিমাণ</th><th>দর</th><th>মোট</th></tr></thead><tbody></tbody></table></div>
+                <h3>💰 ক্যাশ স্টেটমেন্ট</h3>
+                <div class="table-container"><table id="ledger-cash-table"><thead><tr><th>তারিখ</th><th>ধরন</th><th>বিবরণ</th><th>জমা (+)</th><th>খরচ (-)</th><th>ব্যালেন্স</th></tr></thead><tbody></tbody></table></div>
+            </div>
+        </div>
     </div>
 
-    <div id="otpForm" style="display:none;">
-        <input type="text" id="otpInput" placeholder="6-DIGIT OTP">
-        <button onclick="verifyAccess()">AUTHORIZE ACCESS</button>
-    </div>
-    
-    <div id="status">SYSTEM READY</div>
-</div>
+    <script>
+        // আপনার দেওয়া লাইভ গুগল অ্যাপ স্ক্রিপ্ট ইউআরএল
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2i4d_seP4iXMMj6Vk9j0pe9k8dBSQRPt-Dh92ibgCQY-y6wspyzMpRaLJBLqUis6plw/exec';
 
-<div id="loader">
-    <div class="cup"><div class="liquid"></div></div>
-    <p style="color:var(--gold); margin-top:20px; letter-spacing: 4px; font-size: 12px;">LAUNCHING SECURE SESSION...</p>
-</div>
+        let purchases = [], sales = [], cashbook = [], suppliers = [], customers = [];
 
-<script>
-    const CONFIG = {
-        SERVICE_ID: "service_nw00tun", 
-        TEMPLATE_ID: "template_zf9zcfh",
-        PUBLIC_KEY: "KzgxzhVjif7ZN0Hoz",
-        PRIVATE_KEY: "y0YX35bmjeqDOUITX6Tul"
-    };
+        function showLoader(show) { document.getElementById('loader').style.display = show ? 'block' : 'none'; }
 
-    let generatedOTP = "";
-
-    async function sendStrictOTP() {
-        const user = document.getElementById('username').value.trim();
-        const status = document.getElementById('status');
-
-        // ইউজারনেম পরিবর্তন করে adminmadb চেক করা হচ্ছে
-        if (user !== "adminmadb") {
-            status.innerText = "ACCESS DENIED: INVALID OPERATOR";
-            status.style.color = "#ff4d4d";
-            return;
+        async function cloudCall(action, sheet, data) {
+            showLoader(true);
+            try {
+                let response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action, sheet, data })
+                });
+                let resData = await response.json();
+                showLoader(false);
+                return resData;
+            } catch (err) {
+                showLoader(false);
+                console.error("Cloud Error:", err);
+                alert("সার্ভার কানেকশন এরর! ইন্টারনেট চেক করুন।");
+            }
         }
 
-        status.innerText = "TRANSMITTING DATA...";
-        generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-
-        const data = {
-            service_id: CONFIG.SERVICE_ID,
-            template_id: CONFIG.TEMPLATE_ID,
-            user_id: CONFIG.PUBLIC_KEY,
-            accessToken: CONFIG.PRIVATE_KEY,
-            template_params: {
-                to_email: "mdalijim2@gmail.com",
-                otp_code: generatedOTP,
-                project_name: "MOHAMMAD ACCESSORIES"
+        async function fetchAllData() {
+            showLoader(true);
+            try {
+                let response = await fetch(SCRIPT_URL);
+                let data = await response.json();
+                
+                purchases = data.purchases.slice(1).map(r => ({ invoiceId: r[0], date: r[1] ? r[1].split('T')[0] : '', supplier: r[2], name: r[3], qty: Number(r[4]), price: Number(r[5]) }));
+                sales = data.sales.slice(1).map(r => ({ invoiceId: r[0], date: r[1] ? r[1].split('T')[0] : '', customer: r[2], name: r[3], qty: Number(r[4]), price: Number(r[5]) }));
+                cashbook = data.cashbook.slice(1).map(r => ({ id: r[0], date: r[1] ? r[1].split('T')[0] : '', type: r[2], company: r[3], amount: Number(r[4]), desc: r[5] }));
+                suppliers = data.partners.slice(1).filter(r => r[2] === 'supplier').map(r => ({ name: r[0], contact: r[1] }));
+                customers = data.partners.slice(1).filter(r => r[2] === 'customer').map(r => ({ name: r[0], address: r[1] }));
+                
+                updateDropdowns();
+                renderTables();
+            } catch(e) {
+                console.error("Fetch failed", e);
             }
-        };
+            showLoader(false);
+        }
 
-        try {
-            const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
+        function formatNumber(num) { return Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
-            if (response.ok) {
-                status.innerText = "SUCCESS: CODE SENT TO EMAIL";
-                status.style.color = "#4dff88";
-                document.getElementById('loginForm').style.display = "none";
-                document.getElementById('otpForm').style.display = "block";
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).style.display = 'block';
+            document.getElementById('btn-' + id).classList.add('active');
+            if(id === 'ledger') initLedgerFilter();
+        }
+
+        function addItemRow(containerId, prefix) {
+            let container = document.getElementById(containerId);
+            let div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `
+                <input type="text" class="${prefix}-name" placeholder="পণ্যের নাম" required>
+                <input type="number" class="${prefix}-qty" placeholder="পরিমাণ" step="any" required>
+                <input type="number" class="${prefix}-price" placeholder="দর" step="any" required>
+                <button type="button" class="btn-remove-row" onclick="this.parentElement.remove()">X</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function updateDropdowns() {
+            let pSup = document.getElementById('p-supplier');
+            let sCust = document.getElementById('s-customer');
+            let cComp = document.getElementById('c-company');
+            if(pSup) { pSup.innerHTML = ''; suppliers.forEach(s => pSup.innerHTML += `<option value="${s.name}">${s.name}</option>`); }
+            if(sCust) { sCust.innerHTML = ''; customers.forEach(c => sCust.innerHTML += `<option value="${c.name}">${c.name}</option>`); }
+            if(cComp) {
+                cComp.innerHTML = '<option value="" disabled selected>-- কোম্পানি সিলেক্ট করুন --</option>';
+                customers.forEach(c => cComp.innerHTML += `<option value="${c.name}">${c.name} (Buyer)</option>`);
+                suppliers.forEach(s => cComp.innerHTML += `<option value="${s.name}">${s.name} (Seller)</option>`);
+            }
+        }
+
+        async function savePurchase(e) {
+            e.preventDefault();
+            let date = document.getElementById('p-date').value;
+            let supplier = document.getElementById('p-supplier').value;
+            let invoiceId = "PUR-" + Date.now().toString().slice(-5);
+            
+            let rows = document.querySelectorAll('#p-items .item-row');
+            for(let row of rows) {
+                let name = row.querySelector('.p-name').value;
+                let qty = parseFloat(row.querySelector('.p-qty').value);
+                let price = parseFloat(row.querySelector('.p-price').value);
+                await cloudCall("save", "purchases", [invoiceId, date, supplier, name, qty, price]);
+            }
+            alert('ক্রয় মেঘে সফলভাবে সেভ হয়েছে!');
+            document.getElementById('purchase-form').reset();
+            resetForms(); fetchAllData();
+        }
+
+        async function saveSales(e) {
+            e.preventDefault();
+            let date = document.getElementById('s-date').value;
+            let customer = document.getElementById('s-customer').value;
+            let invoiceId = "INV-" + Date.now().toString().slice(-5);
+
+            let rows = document.querySelectorAll('#s-items .item-row');
+            for(let row of rows) {
+                let name = row.querySelector('.s-name').value;
+                let qty = parseFloat(row.querySelector('.s-qty').value);
+                let price = parseFloat(row.querySelector('.s-price').value);
+                await cloudCall("save", "sales", [invoiceId, date, customer, name, qty, price]);
+            }
+            alert('বিক্রয় মেঘে সফলভাবে সেভ হয়েছে!');
+            document.getElementById('sales-form').reset();
+            resetForms(); fetchAllData();
+        }
+
+        async function saveCash(e) {
+            e.preventDefault();
+            let id = "CSH-" + Date.now().toString().slice(-5);
+            let date = document.getElementById('c-date').value;
+            let type = document.getElementById('c-type').value;
+            let company = document.getElementById('c-company').value.split(' (')[0];
+            let amount = parseFloat(document.getElementById('c-amount').value);
+            let desc = document.getElementById('c-desc').value || 'নগদ লেনদেন';
+
+            await cloudCall("save", "cashbook", [id, date, type, company, amount, desc]);
+            alert('ক্যাশ ট্রানজেকশন সফলভাবে ক্লাউডে আপলোড হয়েছে!');
+            document.getElementById('cash-form').reset();
+            fetchAllData();
+        }
+
+        async function addPartner(e, type) {
+            e.preventDefault();
+            if(type === 'suppliers') {
+                let name = document.getElementById('sup-name').value;
+                let contact = document.getElementById('sup-contact').value;
+                await cloudCall("save", "partners", [name, contact, "supplier"]);
+                document.getElementById('sup-form').reset();
             } else {
-                const errorMsg = await response.text();
-                status.innerText = "FAILED: " + errorMsg;
-                console.error("Server Error:", errorMsg);
+                let name = document.getElementById('cust-name').value;
+                let address = document.getElementById('cust-address').value;
+                await cloudCall("save", "partners", [name, address, "customer"]);
+                document.getElementById('cust-form').reset();
             }
-        } catch (error) {
-            status.innerText = "NETWORK ERROR. REFRESH PAGE.";
+            alert('সফলভাবে যুক্ত করা হয়েছে!');
+            fetchAllData();
         }
-    }
 
-    function verifyAccess() {
-        const input = document.getElementById('otpInput').value.trim();
-        if (input === generatedOTP) {
-            document.getElementById('loader').style.display = "flex";
-            setTimeout(() => {
-                // ওটিপি ঠিক থাকলে সরাসরি adminmadb.html এ নিয়ে যাবে
-                window.location.href = "adminmadb.html";
-            }, 3500);
-        } else {
-            document.getElementById('status').innerText = "WRONG CODE. ACCESS BLOCKED.";
-            document.getElementById('status').style.color = "#ff4d4d";
+        async function deleteCloudRecord(sheet, id) {
+            if(!confirm("ডাটাবেজ (Google Sheet) থেকে স্থায়ীভাবে ডিলিট করতে চান?")) return;
+            showLoader(true);
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "deleteRow", sheet: sheet, id: id })
+                });
+                alert("সফলভাবে ডিলিট হয়েছে।");
+                fetchAllData();
+            } catch(e) { alert("ডিলিট ব্যর্থ হয়েছে।"); }
+            showLoader(false);
         }
-    }
-</script>
 
+        function renderTables() {
+            let totalP = purchases.reduce((sum, item) => sum + (item.qty * item.price), 0);
+            let totalS = sales.reduce((sum, item) => sum + (item.qty * item.price), 0);
+            let totalIn = cashbook.filter(c => c.type === 'In').reduce((sum, c) => sum + c.amount, 0);
+            let totalOut = cashbook.filter(c => c.type === 'Out').reduce((sum, c) => sum + c.amount, 0);
+
+            document.getElementById('dash-p').innerText = formatNumber(totalP) + " ৳";
+            document.getElementById('dash-s').innerText = formatNumber(totalS) + " ৳";
+            document.getElementById('dash-in').innerText = formatNumber(totalIn) + " ৳";
+            document.getElementById('dash-out').innerText = formatNumber(totalOut) + " ৳";
+
+            // টেবিল ভিউ রেন্ডারিং
+            let pRows = ''; purchases.forEach(p => pRows += `<tr><td>${p.date}</td><td>${p.invoiceId}</td><td>${p.supplier}</td><td>${p.name}</td><td>${formatNumber(p.qty)}</td><td>${formatNumber(p.price)}</td><td>${formatNumber(p.qty*p.price)}</td><td><button class="delete-btn" onclick="deleteCloudRecord('purchases', '${p.invoiceId}')">ডিলিট</button></td></tr>`);
+            document.querySelector('#raw-p-table tbody').innerHTML = pRows || '<tr><td colspan="8" style="text-align:center; color:#7f8c8d;">কোনো ডাটা নেই।</td></tr>';
+
+            let sRows = ''; sales.forEach(s => sRows += `<tr><td>${s.date}</td><td>${s.invoiceId}</td><td>${s.customer}</td><td>${s.name}</td><td>${formatNumber(s.qty)}</td><td>${formatNumber(s.price)}</td><td>${formatNumber(s.qty*s.price)}</td><td><button class="delete-btn" onclick="deleteCloudRecord('sales', '${s.invoiceId}')">ডিলিট</button></td></tr>`);
+            document.querySelector('#raw-s-table tbody').innerHTML = sRows || '<tr><td colspan="8" style="text-align:center; color:#7f8c8d;">কোনো ডাটা নেই।</td></tr>';
+
+            let paidRows = ''; cashbook.filter(c => c.type === 'Out').forEach(c => paidRows += `<tr><td>${c.date}</td><td>${c.id}</td><td>${c.company}</td><td>${c.desc}</td><td>${formatNumber(c.amount)} ৳</td><td><button class="delete-btn" onclick="deleteCloudRecord('cashbook', '${c.id}')">ডিলিট</button></td></tr>`);
+            document.querySelector('#raw-paid-table tbody').innerHTML = paidRows || '<tr><td colspan="6" style="text-align:center; color:#7f8c8d;">কোনো ডাটা নেই।</td></tr>';
+
+            let recRows = ''; cashbook.filter(c => c.type === 'In').forEach(c => recRows += `<tr><td>${c.date}</td><td>${c.id}</td><td>${c.company}</td><td>${c.desc}</td><td>${formatNumber(c.amount)} ৳</td><td><button class="delete-btn" onclick="deleteCloudRecord('cashbook', '${c.id}')">ডিলিট</button></td></tr>`);
+            document.querySelector('#raw-received-table tbody').innerHTML = recRows || '<tr><td colspan="6" style="text-align:center; color:#7f8c8d;">কোনো ডাটা নেই।</td></tr>';
+
+            let supRows = ''; suppliers.forEach(s => supRows += `<tr><td>${s.name}</td><td>${s.contact}</td><td><button class="delete-btn" onclick="deleteCloudRecord('partners', '${s.name}')">ডিলিট</button></td></tr>`);
+            document.querySelector('#sup-table tbody').innerHTML = supRows;
+
+            let custRows = ''; customers.forEach(c => custRows += `<tr><td>${c.name}</td><td>${c.address}</td><td><button class="delete-btn" onclick="deleteCloudRecord('partners', '${c.name}')">ডিলিট</button></td></tr>`);
+            document.querySelector('#cust-table tbody').innerHTML = custRows;
+        }
+
+        function generateDoc(type) {
+            if(sales.length === 0) return alert('কোনো বিক্রয়ের রেকর্ড পাওয়া যায়নি!');
+            let lastInvId = sales[sales.length - 1].invoiceId;
+            let currentItems = sales.filter(item => item.invoiceId === lastInvId);
+            let mainCust = currentItems[0].customer;
+            document.getElementById('doc-cust').innerText = mainCust;
+            document.getElementById('doc-date').innerText = currentItems[0].date;
+            document.getElementById('doc-id').innerText = lastInvId;
+
+            let tableHTML = `<thead><tr><th>পণ্যের বিবরণ</th><th>পরিমাণ</th><th>দর</th><th>মোট</th></tr></thead><tbody>`;
+            let totalBill = 0;
+            currentItems.forEach(item => {
+                let total = item.qty * item.price; totalBill += total;
+                tableHTML += `<tr><td>${item.name}</td><td>${formatNumber(item.qty)}</td><td>${formatNumber(item.price)} ৳</td><td>${formatNumber(total)} ৳</td></tr>`;
+            });
+            tableHTML += `</tbody>`;
+            document.getElementById('doc-table').innerHTML = tableHTML;
+            document.getElementById('doc-total-text').innerText = "মোট বিল: " + formatNumber(totalBill) + " ৳";
+        }
+
+        function initLedgerFilter() {
+            let select = document.getElementById('ledger-filter-select');
+            select.innerHTML = '<option value="">-- কোম্পানি সিলেক্ট করুন --</option>';
+            let allComps = new Set([...suppliers.map(s=>s.name), ...customers.map(c=>c.name)]);
+            allComps.forEach(comp => select.innerHTML += `<option value="${comp}">${comp}</option>`);
+        }
+
+        function renderLedger() {
+            let comp = document.getElementById('ledger-filter-select').value;
+            if(!comp) return document.getElementById('ledger-content').style.display = 'none';
+            document.getElementById('ledger-content').style.display = 'block';
+
+            let filteredP = purchases.filter(p => p.supplier === comp);
+            let filteredS = sales.filter(s => s.customer === comp);
+            let goodsBody = ''; let totalGoodsVal = 0;
+
+            filteredP.forEach(p => { totalGoodsVal += (p.qty*p.price); goodsBody += `<tr><td>${p.date}</td><td>${p.invoiceId}</td><td>ক্রয়: ${p.name}</td><td>${p.qty}</td><td>${p.price}</td><td>${p.qty*p.price} ৳</td></tr>`; });
+            filteredS.forEach(s => { totalGoodsVal += (s.qty*s.price); goodsBody += `<tr><td>${s.date}</td><td>${s.invoiceId}</td><td>বিক্রয়: ${s.name}</td><td>${s.qty}</td><td>${s.price}</td><td>${s.qty*s.price} ৳</td></tr>`; });
+            document.querySelector('#ledger-goods-table tbody').innerHTML = goodsBody;
+
+            let filteredCash = cashbook.filter(c => c.company === comp);
+            let cashBody = ''; let totalIn = 0, totalOut = 0;
+            filteredCash.forEach(c => {
+                if(c.type === 'In') totalIn += c.amount; else totalOut += c.amount;
+                cashBody += `<tr><td>${c.date}</td><td>${c.type}</td><td>${c.desc}</td><td>${c.type==='In'?c.amount:'-'}</td><td>${c.type==='Out'?c.amount:'-'}</td><td>-</td></tr>`;
+            });
+            document.querySelector('#ledger-cash-table tbody').innerHTML = cashBody;
+        }
+
+        function resetForms() { document.getElementById('p-items').innerHTML = ''; document.getElementById('s-items').innerHTML = ''; addItemRow('p-items', 'p'); addItemRow('s-items', 's'); }
+
+        window.onload = function() { resetForms(); fetchAllData(); };
+    </script>
 </body>
 </html>
