@@ -1,0 +1,152 @@
+ <!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOHAMMAD ACCESSORIES | Security Terminal</title>
+    <style>
+        :root { --gold: #d4a373; --bg: #0a0a0a; --coffee: #3a2e22; }
+        body { background: var(--bg); color: var(--gold); font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        
+        /* Scanner Effect Background */
+        body::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: rgba(212, 163, 115, 0.2); box-shadow: 0 0 10px var(--gold);
+            animation: scan 4s linear infinite; z-index: 1;
+        }
+        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
+
+        .card { 
+            position: relative; z-index: 10; border: 1px solid var(--gold); 
+            padding: 40px; text-align: center; background: rgba(10, 10, 10, 0.95); 
+            width: 350px; box-shadow: 0 0 50px #000; border-radius: 5px;
+        }
+
+        .brand { font-size: 24px; font-weight: bold; letter-spacing: 2px; margin-bottom: 5px; text-shadow: 0 0 10px var(--gold); }
+        .tagline { font-size: 9px; color: #555; margin-bottom: 30px; letter-spacing: 2px; }
+
+        input { 
+            width: 90%; background: transparent; border: none; border-bottom: 1px solid #222; 
+            color: #fff; padding: 12px; margin: 15px 0; outline: none; font-size: 16px; 
+            text-align: center; transition: 0.3s;
+        }
+        input:focus { border-bottom: 1px solid var(--gold); background: rgba(212, 163, 115, 0.05); }
+
+        button { 
+            width: 100%; background: var(--gold); color: #000; border: none; 
+            padding: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; 
+            text-transform: uppercase; letter-spacing: 3px; transition: 0.4s;
+        }
+        button:hover { background: #fff; box-shadow: 0 0 20px #fff; }
+
+        #status { font-size: 11px; margin-top: 20px; color: #666; min-height: 15px; text-transform: uppercase; }
+
+        /* Brewing Animation Overlay */
+        #loader { 
+            position: fixed; inset: 0; background: #000; display: none; 
+            flex-direction: column; justify-content: center; align-items: center; z-index: 1000; 
+        }
+        .cup { width: 60px; height: 45px; border: 2px solid var(--gold); border-radius: 0 0 20px 20px; position: relative; overflow: hidden; }
+        .liquid { position: absolute; bottom: 0; width: 100%; height: 0; background: var(--coffee); animation: fill 3s forwards; }
+        @keyframes fill { to { height: 90%; } }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="brand">MOHAMMAD ACCESSORIES</div>
+    <div class="tagline">ENCRYPTED SECURE TERMINAL</div>
+    
+    <div id="loginForm">
+        <input type="text" id="username" placeholder="OPERATOR ID">
+        <button onclick="sendStrictOTP()">SEND ACCESS CODE</button>
+    </div>
+
+    <div id="otpForm" style="display:none;">
+        <input type="text" id="otpInput" placeholder="6-DIGIT OTP">
+        <button onclick="verifyAccess()">AUTHORIZE ACCESS</button>
+    </div>
+    
+    <div id="status">SYSTEM READY</div>
+</div>
+
+<div id="loader">
+    <div class="cup"><div class="liquid"></div></div>
+    <p style="color:var(--gold); margin-top:20px; letter-spacing: 4px; font-size: 12px;">LAUNCHING SECURE SESSION...</p>
+</div>
+
+<script>
+    const CONFIG = {
+        SERVICE_ID: "service_nw00tun", 
+        TEMPLATE_ID: "template_zf9zcfh",
+        PUBLIC_KEY: "KzgxzhVjif7ZN0Hoz",
+        PRIVATE_KEY: "y0YX35bmjeqDOUITX6Tul"
+    };
+
+    let generatedOTP = "";
+
+    async function sendStrictOTP() {
+        const user = document.getElementById('username').value.trim();
+        const status = document.getElementById('status');
+
+        // ইউজারনেম পরিবর্তন করে adminmadb চেক করা হচ্ছে
+        if (user !== "adminmadb") {
+            status.innerText = "ACCESS DENIED: INVALID OPERATOR";
+            status.style.color = "#ff4d4d";
+            return;
+        }
+
+        status.innerText = "TRANSMITTING DATA...";
+        generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const data = {
+            service_id: CONFIG.SERVICE_ID,
+            template_id: CONFIG.TEMPLATE_ID,
+            user_id: CONFIG.PUBLIC_KEY,
+            accessToken: CONFIG.PRIVATE_KEY,
+            template_params: {
+                to_email: "mdalijim2@gmail.com",
+                otp_code: generatedOTP,
+                project_name: "MOHAMMAD ACCESSORIES"
+            }
+        };
+
+        try {
+            const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                status.innerText = "SUCCESS: CODE SENT TO EMAIL";
+                status.style.color = "#4dff88";
+                document.getElementById('loginForm').style.display = "none";
+                document.getElementById('otpForm').style.display = "block";
+            } else {
+                const errorMsg = await response.text();
+                status.innerText = "FAILED: " + errorMsg;
+                console.error("Server Error:", errorMsg);
+            }
+        } catch (error) {
+            status.innerText = "NETWORK ERROR. REFRESH PAGE.";
+        }
+    }
+
+    function verifyAccess() {
+        const input = document.getElementById('otpInput').value.trim();
+        if (input === generatedOTP) {
+            document.getElementById('loader').style.display = "flex";
+            setTimeout(() => {
+                // ওটিপি ঠিক থাকলে সরাসরি adminmadb.html এ নিয়ে যাবে
+                window.location.href = "adminmadb.html";
+            }, 3500);
+        } else {
+            document.getElementById('status').innerText = "WRONG CODE. ACCESS BLOCKED.";
+            document.getElementById('status').style.color = "#ff4d4d";
+        }
+    }
+</script>
+
+</body>
+</html>
